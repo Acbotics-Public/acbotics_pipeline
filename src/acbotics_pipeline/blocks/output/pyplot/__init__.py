@@ -8,5 +8,7 @@ import acbotics_pipeline.blocks.output.pyplot.out_pyplot_ship_location
 import acbotics_pipeline.blocks.output.pyplot.out_pyplot_spectrogram
 import acbotics_pipeline.blocks.output.pyplot.out_pyplot_spectrogram_queue
 import acbotics_pipeline.blocks.output.pyplot.out_pyplot_spectrum
+import acbotics_pipeline.blocks.output.pyplot.out_pyplot_spectrum_fft
 import acbotics_pipeline.blocks.output.pyplot.out_pyplot_time_series
 import acbotics_pipeline.blocks.output.pyplot.out_pyplot_time_series_multiple
+import acbotics_pipeline.blocks.output.pyplot.out_pyplot_sensor

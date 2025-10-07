@@ -10,6 +10,12 @@ from acbotics_pipeline.data_containers.data_container_beamformed_output_raw impo
 from acbotics_pipeline.data_containers.data_container_beamformed_output_2d import (
     DataContainer_Beamformed_Output_2D,
 )
+from acbotics_pipeline.data_containers.data_container_beamformed_output_raw_simple import (
+    DataContainer_Beamformed_Output_Raw_Simple,
+)
+from acbotics_pipeline.data_containers.data_container_beamformed_output_2d_simple import (
+    DataContainer_Beamformed_Output_2D_Simple,
+)
 
 
 class Pr_Beamformer_Raw_To_2D(Pr_Multiprocess_Process):
@@ -18,7 +24,8 @@ class Pr_Beamformer_Raw_To_2D(Pr_Multiprocess_Process):
     """
 
     @icontract.require(
-        lambda dc: isinstance(dc, DataContainer_Beamformed_Output_Raw),
+        lambda dc: isinstance(dc, DataContainer_Beamformed_Output_Raw)
+        or isinstance(dc, DataContainer_Beamformed_Output_Raw_Simple),
         "Argument must be 2d beamformed data",
     )
     def handle_data(self, dc):
@@ -26,23 +33,32 @@ class Pr_Beamformer_Raw_To_2D(Pr_Multiprocess_Process):
         Process a raw beamform into a 2D beamform.
         """
         data = np.sum(dc.data, 2) / (dc.data.shape[2])
-        dc_out = DataContainer_Beamformed_Output_2D(
-            data,
-            thetas=dc.thetas,
-            phis=dc.phis,
-            frequencies=dc.frequencies,
-            start_time=dc.start_time,
-            array_x=dc.array_x,
-            array_y=dc.array_y,
-            array_z=dc.array_z,
-            window_length_s=dc.window_length_s,
-            sample_rate=dc.sample_rate,
-            element_mask=dc.element_mask,
-            mode="mean",
-            weighting_type=dc.weighting_type,
-            xform_pitch=dc.xform_pitch,
-            xform_roll=dc.xform_roll,
-            xform_yaw=dc.xform_yaw,
-            element_weights=dc.element_weights,
-        )
+        if isinstance(dc, DataContainer_Beamformed_Output_Raw):
+            dc_out = DataContainer_Beamformed_Output_2D(
+                data,
+                thetas=dc.thetas,
+                phis=dc.phis,
+                frequencies=dc.frequencies,
+                start_time=dc.start_time,
+                array_x=dc.array_x,
+                array_y=dc.array_y,
+                array_z=dc.array_z,
+                window_length_s=dc.window_length_s,
+                sample_rate=dc.sample_rate,
+                element_mask=dc.element_mask,
+                mode="mean",
+                weighting_type=dc.weighting_type,
+                xform_pitch=dc.xform_pitch,
+                xform_roll=dc.xform_roll,
+                xform_yaw=dc.xform_yaw,
+                element_weights=dc.element_weights,
+            )
+        else:
+            dc_out = DataContainer_Beamformed_Output_2D_Simple(
+                data,
+                thetas=dc.thetas,
+                phis=dc.phis,
+                start_time=dc.start_time,
+            )
+
         return dc_out

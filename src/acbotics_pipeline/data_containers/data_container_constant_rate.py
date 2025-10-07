@@ -19,7 +19,15 @@ class DataContainer_Constant_Rate(DataContainer):
         lambda start_time: isinstance(start_time, np.datetime64),
         "start_time must be datetime64",
     )
-    def __init__(self, data, sample_rate, start_time, start_count=0, frame_count=None):
+    def __init__(
+        self,
+        data,
+        sample_rate,
+        start_time,
+        start_count=0,
+        frame_count=None,
+        tick_time=0,
+    ):
         # TODO: MAke sure all data is 2D array even if only one channel?
         if isinstance(data, list):
             if len(data) > 0:
@@ -38,6 +46,7 @@ class DataContainer_Constant_Rate(DataContainer):
         self.orig_start_time = start_time
         self.removed_data_count = 0
         self.start_count = start_count
+        self.tick_time = tick_time
 
     def get_timestamps(self):
         t_step = 1e9 / self.sample_rate

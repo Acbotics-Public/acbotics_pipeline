@@ -5,3 +5,4 @@ import acbotics_pipeline.blocks.output.network
 import acbotics_pipeline.blocks.output.pyplot
 import acbotics_pipeline.blocks.output.state
 import acbotics_pipeline.blocks.output.daq
+import acbotics_pipeline.blocks.output.buffer

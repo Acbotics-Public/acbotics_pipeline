@@ -10,6 +10,9 @@ from acbotics_pipeline.data_containers.data_container_beamformed_output_1d impor
 from acbotics_pipeline.data_containers.data_container_beamformed_output_2d import (
     DataContainer_Beamformed_Output_2D,
 )
+from acbotics_pipeline.data_containers.data_container_beamformed_output_2d_simple import (
+    DataContainer_Beamformed_Output_2D_Simple,
+)
 
 
 class Pr_Beamformer_2D_To_1D(Pr_Multiprocess_Process):
@@ -17,7 +20,8 @@ class Pr_Beamformer_2D_To_1D(Pr_Multiprocess_Process):
     Uses sum over elevations."""
 
     @icontract.require(
-        lambda dc: isinstance(dc, DataContainer_Beamformed_Output_2D),
+        lambda dc: isinstance(dc, DataContainer_Beamformed_Output_2D)
+        or isinstance(dc, DataContainer_Beamformed_Output_2D_Simple),
         "Argument must be 2d beamformed data",
     )
     def handle_data(self, dc):

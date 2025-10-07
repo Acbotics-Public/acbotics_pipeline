@@ -38,11 +38,18 @@ import time
 
 class Fixture(ABC):
     def __init__(self):
+        self.cpp_blocks = {}
         self.blocks = []
         self.signal_router = {}
         self.next_fig_num = 1
 
         self.build()
+
+    def add_cpp_block(self, name, block, source=None):
+        self.cpp_blocks[name] = block
+        if not source is None and source in self.cpp_blocks.keys():
+            source_block = self.cpp_blocks[source]
+            source_block.register_client(block)
 
     @abstractmethod
     def build(self):
@@ -84,6 +91,9 @@ class Fixture(ABC):
         return v
 
     def run(self, sleep_time=0.0):
+        for name, block in self.cpp_blocks.items():
+            print("Running Cpp block" + name)
+            block.run()
         while True:
             t = np.datetime64(time.time_ns(), "ns")
             for b in self.blocks:

@@ -1,3 +1,4 @@
+print("initalizing data containers")
 import acbotics_pipeline.data_containers.data_container
 import acbotics_pipeline.data_containers.data_container_angle_list
 import acbotics_pipeline.data_containers.data_container_beamformed_output_1d
@@ -8,3 +9,7 @@ import acbotics_pipeline.data_containers.data_container_nav
 import acbotics_pipeline.data_containers.data_container_pt
 import acbotics_pipeline.data_containers.data_container_status
 import acbotics_pipeline.data_containers.data_container_detection
+import acbotics_pipeline.data_containers.data_container_fft
+import acbotics_pipeline.data_containers.data_container_beamformed_output_2d_simple
+import acbotics_pipeline.data_containers.data_container_beamformed_output_raw_simple
+import acbotics_pipeline.data_containers.data_container_sensor

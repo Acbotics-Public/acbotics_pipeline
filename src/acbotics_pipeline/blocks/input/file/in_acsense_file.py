@@ -108,7 +108,6 @@ class In_AcSense_File(ABC):
             block_start = self.file.tell()
             data = self.parse_record()
             self.samples_from_file += 255
-            # print(data)
             for i in range(8):
                 raw_data[i].extend(data["data"][i])
             self.file.seek(block_start + 0x1000)

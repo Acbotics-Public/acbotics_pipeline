@@ -9,6 +9,11 @@ import matplotlib.pyplot as plt
 
 class Fixture_Pyplot(Fixture):
     def run(self):
+        # TODO; This is repeated from fixture. Refactor
+        for name, block in self.cpp_blocks.items():
+            print("Running Cpp block" + name)
+            block.run()
+
         while True:
             t = np.datetime64(time.time_ns(), "ns")
             for b in self.blocks:

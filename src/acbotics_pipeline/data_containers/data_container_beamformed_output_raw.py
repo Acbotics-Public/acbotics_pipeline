@@ -77,8 +77,6 @@ class DataContainer_Beamformed_Output_Raw(DataContainer):
         self.element_weights = element_weights
         if isinstance(self.element_weights, list):
             self.element_weights = np.array(self.element_weights, dtype=np.float64)
-        print(self.element_mask)
-        print(self.array_x)
         assert self.element_mask.size == self.array_x.size
         assert self.element_weights.size == self.array_x.size
         assert self.array_y.size == self.array_x.size

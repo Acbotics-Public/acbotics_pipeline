@@ -5,13 +5,13 @@ import queue
 from collections import deque
 
 
-class Out_Pyplot_Time_Series_Multiple:
+class Out_Pyplot_Sensor:
     def __init__(
         self,
         update_rate,
         samples_to_plot,
         figure_num,
-        title="Time Series Plot",
+        title="Sensor Plot",
         ylabel="Signal",
         ymin=-5,
         ymax=5,
@@ -32,8 +32,8 @@ class Out_Pyplot_Time_Series_Multiple:
         else:
             self.num_plots = num_sigs
             self.channels = [i for i in range(num_sigs)]
-        self.data_buffer = [deque(maxlen=self.samples_to_plot) for i in range(num_sigs)]
-
+        self.data_buffer = {"timestamp": deque(maxlen=self.samples_to_plot)}
+        self.title = title
         plt.figure(figure_num)
         plt.title(title)
         plt.xlabel("Time (s)")
@@ -44,15 +44,12 @@ class Out_Pyplot_Time_Series_Multiple:
         ]
         plt.ion()
         # self.axes = plt.axes()
-        self.sample_rate = None
 
     def is_waiting(self):
         return True
 
-    @icontract.require(lambda dc: dc.is_constant_rate(), "sample_rate must be constant")
     def input_data(self, dc):
-        self.received_data.put(dc.data)
-        self.sample_rate = dc.get_sample_rate()
+        self.received_data.put(dc)
 
     def process(self, process_time):
         if self.last_update is None:
@@ -66,22 +63,25 @@ class Out_Pyplot_Time_Series_Multiple:
             # while self.received_data.qsize() > 100: # hack to handle too muxh data
             #     self.received_data.get()
             data = self.received_data.get()
-            for i in range(self.num_sigs):
-                self.data_buffer[i] += deque(data[i, :])
+            for k in data.value_dict.keys():
+                if not k in self.data_buffer.keys():
+                    self.data_buffer[k] = deque(
+                        [0 for i in range(len(self.data_buffer["timestamp"]))],
+                        maxlen=self.samples_to_plot,
+                    )
+                self.data_buffer[k] += deque([data.value_dict[k]])
+            self.data_buffer["timestamp"] += deque([data.timestamp])
 
         plt.figure(self.figure_num)
-        for i in range(self.num_plots):
-            if len(self.data_buffer[self.channels[i]]) == 0:
+        plt.cla()
+        labels = []
+        for k in self.data_buffer.keys():
+            if k is "timestamp":
                 continue
-            x = np.array(
-                [
-                    x / self.sample_rate
-                    for x in range(0, len(self.data_buffer[self.channels[i]]))
-                ]
+            plt.plot(
+                np.array(self.data_buffer["timestamp"]), np.array(self.data_buffer[k])
             )
-            y = np.array(self.data_buffer[self.channels[i]])
-            self.graphs[i].set_ydata(y)
-            self.graphs[i].set_xdata(x)
-            self.graphs[i].axes.set_ylim([self.ymin, self.ymax])
-            self.graphs[i].axes.set_xlim([min(x), max(x)])
+            labels.append(k)
+        plt.legend(labels)
+        plt.title(self.title)
         plt.draw()
