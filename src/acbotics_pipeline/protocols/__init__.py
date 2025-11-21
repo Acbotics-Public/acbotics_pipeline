@@ -7,3 +7,21 @@ import acbotics_pipeline.protocols.udp_generic_protocol
 import acbotics_pipeline.protocols.udp_nav_protocol
 import acbotics_pipeline.protocols.udp_saildrone_nav_protocol
 import acbotics_pipeline.protocols.udp_status_protocol
+
+
+from acbotics_pipeline.protocols.udp_beamform_2d_protocol import (
+    UDP_Beamform_2D_Protocol,
+)
+from acbotics_pipeline.protocols.udp_beamform_raw_protocol import (
+    UDP_Beamform_Raw_Protocol,
+)
+from acbotics_pipeline.protocols.udp_data_protocol import UDP_Data_Protocol
+from acbotics_pipeline.protocols.udp_data_protocol_ac_sense import (
+    UDP_Data_Protocol_Ac_Sense,
+)
+from acbotics_pipeline.protocols.udp_generic_protocol import UDP_Generic_Protocol
+from acbotics_pipeline.protocols.udp_nav_protocol import UDP_Nav_Protocol
+from acbotics_pipeline.protocols.udp_saildrone_nav_protocol import (
+    UDP_Saildrone_Nav_Protocol,
+)
+from acbotics_pipeline.protocols.udp_status_protocol import UDP_Status_Protocol

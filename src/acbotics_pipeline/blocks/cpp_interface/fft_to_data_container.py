@@ -26,14 +26,10 @@ class FFT_To_Data_Container:
     def is_waiting(self):
         return True
 
-    def get_sample_rate(self):
-        return self.sample_rate
-
     def add_callback(self, function):
         self.callbacks.append(function)
 
     def run_thread(self):
-
         while True:
             self.run_once()
             sleep(0.1)
@@ -43,9 +39,11 @@ class FFT_To_Data_Container:
             data_frame_cpp = self.cpp_queue_fft.pop()
             data = data_frame_cpp.viewData()
             header = data_frame_cpp.header
+            sample_rate = data_frame_cpp.FS
             data_frame = DataContainer_FFT(
                 data=data,
                 start_time=np.datetime64(header.start_time_nsec, "ns"),
+                sample_rate=sample_rate,
             )
             for cb in self.callbacks:
                 cb(data_frame)

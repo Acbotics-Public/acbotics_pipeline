@@ -4,31 +4,15 @@ except ModuleNotFoundError:
     import acbotics_interface as ac
 from acbotics_pipeline.fixtures.fixture_pyplot import Fixture_Pyplot
 
-from acbotics_pipeline.blocks.cpp_interface.pts_to_data_container import (
+from acbotics_pipeline.blocks.cpp_interface import (
     Pts_To_Data_Container,
-)
-
-from acbotics_pipeline.blocks.cpp_interface.ept_to_data_container import (
     Ept_To_Data_Container,
-)
-
-from acbotics_pipeline.blocks.cpp_interface.bno_to_data_container import (
     Bno_To_Data_Container,
-)
-
-from acbotics_pipeline.blocks.cpp_interface.bnr_to_data_container import (
     Bnr_To_Data_Container,
-)
-
-from acbotics_pipeline.blocks.cpp_interface.rtc_to_data_container import (
     Rtc_To_Data_Container,
-)
-
-
-from acbotics_pipeline.blocks.cpp_interface.imu_to_data_container import (
     Imu_To_Data_Container,
 )
-from acbotics_pipeline.blocks.output.pyplot.out_pyplot_sensor import (
+from acbotics_pipeline.blocks.output.pyplot import (
     Out_Pyplot_Sensor,
 )
 

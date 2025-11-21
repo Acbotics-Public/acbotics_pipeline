@@ -2,12 +2,12 @@ try:
     import acbotics_interface_ext as ac
 except ModuleNotFoundError:
     import acbotics_interface as ac
-from acbotics_pipeline.fixtures.fixture_pyplot import Fixture_Pyplot
+from acbotics_pipeline.fixtures import Fixture_Pyplot
 
 from acbotics_pipeline.blocks.cpp_interface.aco_to_data_container import (
     Aco_To_Data_Container,
 )
-from acbotics_pipeline.blocks.output.pyplot.out_pyplot_time_series_multiple import (
+from acbotics_pipeline.blocks.output.pyplot import (
     Out_Pyplot_Time_Series_Multiple,
 )
 

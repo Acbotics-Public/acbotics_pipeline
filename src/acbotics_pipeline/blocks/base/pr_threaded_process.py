@@ -8,12 +8,14 @@ import pyprctl
 
 
 class PR_Threaded_Process(ABC):
-    def __init__(self):
+    def __init__(self, max_qsize=1000):
         self.callbacks = []
         self.dataframes = queue.Queue()
         self.thread = threading.Thread(target=self.run_thread)
         self.stop = False
         self.waiting = True
+        self.max_qsize = max_qsize
+
         self.start()  # TODO. This may want to be moveed out from here to separate start from block creation.
 
     def start(self):
@@ -23,6 +25,11 @@ class PR_Threaded_Process(ABC):
     def input_data(self, dc):
         self.waiting = False  # we have data to process
         self.dataframes.put(dc)
+        while self.dataframes.qsize() > self.max_qsize:
+            try:
+                self.dataframes.get_nowait()
+            except queue.Empty:
+                pass
 
     def add_callback(self, function):
         self.callbacks.append(function)

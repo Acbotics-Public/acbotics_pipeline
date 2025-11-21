@@ -1,26 +1,22 @@
-from acbotics_pipeline.blocks.input.file.in_wav_file import In_Wav_File
-from acbotics_pipeline.blocks.input.generator.in_sine import In_Sine
-from acbotics_pipeline.blocks.input.generator.in_linear_sweep import In_Linear_Sweep
-from acbotics_pipeline.blocks.input.generator.in_exponential_sweep import (
+from acbotics_pipeline.blocks.input.file import In_Wav_File
+from acbotics_pipeline.blocks.input.generator import (
+    In_Sine,
+    In_Linear_Sweep,
     In_Exponential_Sweep,
+    In_Square,
+    In_Triangle,
+    In_Sawtooth,
 )
-from acbotics_pipeline.blocks.input.generator.in_square import In_Square
-from acbotics_pipeline.blocks.input.generator.in_triangle import In_Triangle
-from acbotics_pipeline.blocks.input.generator.in_sawtooth import In_Sawtooth
 
-from acbotics_pipeline.blocks.output.pyplot.out_pyplot_time_series_multiple import (
+from acbotics_pipeline.blocks.output.pyplot import (
     Out_Pyplot_Time_Series_Multiple,
-)
-from acbotics_pipeline.blocks.output.pyplot.out_pyplot_spectrum import (
     Out_Pyplot_Spectrum,
-)
-from acbotics_pipeline.blocks.output.pyplot.out_pyplot_spectrogram import (
     Out_Pyplot_Spectrogram,
 )
 
-from acbotics_pipeline.blocks.processes.math.pr_noise_gaussian import Pr_Noise_Gaussian
+from acbotics_pipeline.blocks.processes.math import Pr_Noise_Gaussian
 
-from acbotics_pipeline.fixtures.fixture_pyplot import Fixture_Pyplot
+from acbotics_pipeline.fixtures import Fixture_Pyplot
 
 import time
 import numpy as np

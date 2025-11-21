@@ -16,16 +16,20 @@ class DataContainer_FFT(DataContainer):
         lambda start_time: isinstance(start_time, np.datetime64),
         "start_time must be datetime64",
     )
-    def __init__(self, data, start_time):
+    def __init__(self, data, start_time, sample_rate):
         if isinstance(data, list):
             # print("converting list to array")
             data = np.array(data)
         # todo. This should hold meta data about frequency bins and such
+        self.sample_rate = sample_rate
         self.data = data
         self.start_time = start_time
 
     def get_timestamps(self):
         return [self.start_time]
+
+    def get_sample_rate(self):
+        return self.sample_rate
 
     def is_constant_rate(self):
         return False

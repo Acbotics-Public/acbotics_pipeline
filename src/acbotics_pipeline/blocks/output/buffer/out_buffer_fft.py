@@ -15,12 +15,21 @@ class Out_Buffer_FFT(PR_Threaded_Process):
         self.samples_to_keep = samples_to_keep
         self.phone_sensitivity_db = -167.0
         self.recreate_buffers()
+        self.sample_rate = -1
+        self.paused = False
         super().__init__()
 
     def recreate_buffers(self):
         self.data_buffer = [
             deque(maxlen=self.samples_to_keep) for i in range(self.num_sigs)
         ]
+
+    def pause(self):
+        self.paused = True
+
+    def resume(self):
+        self.paused = False
+        self.recreate_buffers()
 
     def is_waiting(self):
         return True
@@ -35,8 +44,17 @@ class Out_Buffer_FFT(PR_Threaded_Process):
             imgs.append(np.array(self.data_buffer[i]).T)
         return imgs
 
+    def get_sample_rate(self):
+        return self.sample_rate
+
     def handle_data(self, dc):
+        if self.paused:
+            return
         data = dc.data
+        sample_rate = dc.get_sample_rate()
+        if not sample_rate == self.sample_rate:
+            self.sample_rate = sample_rate
+            # TODO: should this trigger a buffer reset?
         if not data.shape[0] == self.num_sigs:
             self.num_sigs = data.shape[0]
             self.recreate_buffers()

@@ -20,10 +20,10 @@ docker run --rm --privileged multiarch/qemu-user-static:register --reset 2&> /de
 sleep 1
 
     # --platform linux/amd64,linux/arm64,linux/arm/v8,linux/arm/v7  \
-docker buildx build \
-    --platform linux/amd64,linux/arm64  \
-    --output type=local,dest=dist/dist_ubuntu2404 \
-    --file docker/ubuntu2404.dockerfile \
+#docker buildx build \
+#    --platform linux/amd64,linux/arm64  \
+#    --output type=local,dest=dist/dist_ubuntu2404 \
+#    --file docker/ubuntu2404.dockerfile \
     .
 
 # docker buildx build \
