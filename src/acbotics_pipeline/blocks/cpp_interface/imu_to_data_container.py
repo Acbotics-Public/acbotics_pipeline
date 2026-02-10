@@ -51,7 +51,9 @@ class Imu_To_Data_Container:
             dic["gyro_y"] = data_frame_imu.gyro_y
             dic["gyro_z"] = data_frame_imu.gyro_z
             data_frame = DataContainer_Sensor(
-                timestamp=data_frame_imu.header.start_time_nsec, value_dict=dic
+                timestamp=data_frame_imu.header.start_time_nsec,
+                value_dict=dic,
+                sensor_type="IMU",
             )
             for cb in self.callbacks:
                 cb(data_frame)

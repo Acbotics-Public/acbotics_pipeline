@@ -62,31 +62,12 @@ class UDP_Generic_Protocol:
 
         return dc
 
-    def encode(self, data_array, sample_rate, start_time, scale, packet_number):
-        frame_start_time = start_time.astype(">i8")
-
-        data_endian = data_array.dtype.byteorder
-        if data_endian == "=":  # system order:
-            sys_endian = sys.byteorder
-            if sys_endian == "little":
-                data_endian = "<"
-            else:
-                data_endian = ">"
-
+    def encode_header(self, timestamp, id1, id2, num_bytes):
         header = struct.pack(
             self.header_fmt,
-            ord("A"),
-            ord("C"),
-            self.version_major,
-            self.version_minor,
-            ord(data_endian),
-            data_array.shape[0],
-            data_array.dtype.itemsize,
-            data_array.size,
-            sample_rate,
-            frame_start_time,
-            scale,
-            packet_number,
+            int(timestamp.iloc[0]),
+            id1.encode(),
+            id2.encode(),
+            num_bytes,
         )
-        data_to_send = header + data_array.tobytes()
-        return data_to_send
+        return header

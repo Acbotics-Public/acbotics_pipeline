@@ -45,7 +45,9 @@ class Ept_To_Data_Container:
             dic["pressure_mbar"] = data_frame_ept.pressure_mbar
             dic["temperature_c"] = data_frame_ept.temperature_c
             data_frame = DataContainer_Sensor(
-                timestamp=data_frame_ept.header.start_time_nsec, value_dict=dic
+                timestamp=data_frame_ept.header.start_time_nsec,
+                value_dict=dic,
+                sensor_type="EPT",
             )
             for cb in self.callbacks:
                 cb(data_frame)

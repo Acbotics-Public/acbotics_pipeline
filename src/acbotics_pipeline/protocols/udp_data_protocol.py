@@ -14,7 +14,7 @@ class UDP_Data_Protocol:
         self.VERSION_MAJOR_IND = 2
         self.VERSION_MINOR_IND = 3
         self.version_major = 4
-        self.version_minor = 4
+        self.version_minor = 1
         self.header_fmt = "!BBBBBBBIfqqIdI"
         self.Header_Data = namedtuple(
             "header_data",
@@ -61,11 +61,23 @@ class UDP_Data_Protocol:
         )
         return dc
 
-    def encode(self, data_array, sample_rate, start_time, scale, packet_number):
+    def encode(
+        self,
+        data_array,
+        sample_rate,
+        start_time,
+        scale,
+        packet_number,
+        force_endian=None,
+        adc_count=0,
+        tick_time=0,
+    ):
         frame_start_time = start_time.astype(">i8")
 
         data_endian = data_array.dtype.byteorder
-        if data_endian == "=":  # system order:
+        if force_endian is not None:
+            data_endian = force_endian
+        elif data_endian == "=":  # system order:
             sys_endian = sys.byteorder
             if sys_endian == "little":
                 data_endian = "<"
@@ -84,10 +96,10 @@ class UDP_Data_Protocol:
             data_array.size,
             sample_rate,
             frame_start_time,
-            0,
-            0,  # adc count
+            tick_time,
+            adc_count,  # adc count
             scale,
             packet_number,
         )
-        data_to_send = header + data_array.tobytes()
+        data_to_send = header + data_array.transpose().tobytes()
         return data_to_send

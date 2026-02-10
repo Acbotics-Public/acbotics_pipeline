@@ -45,7 +45,9 @@ class Pts_To_Data_Container:
             dic["pressure_mbar"] = data_frame_pts.pressure_mbar
             dic["temperature_c"] = data_frame_pts.temperature_c
             data_frame = DataContainer_Sensor(
-                timestamp=data_frame_pts.header.start_time_nsec, value_dict=dic
+                timestamp=data_frame_pts.header.start_time_nsec,
+                value_dict=dic,
+                sensor_type="PTS",
             )
             for cb in self.callbacks:
                 cb(data_frame)

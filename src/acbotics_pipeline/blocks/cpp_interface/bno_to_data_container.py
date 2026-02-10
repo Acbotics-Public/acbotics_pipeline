@@ -62,7 +62,9 @@ class Bno_To_Data_Container:
             dic["sense_y"] = data_frame_bno.sense_y
             dic["sense_z"] = data_frame_bno.sense_z
             data_frame = DataContainer_Sensor(
-                timestamp=data_frame_bno.header.start_time_nsec, value_dict=dic
+                timestamp=data_frame_bno.header.start_time_nsec,
+                value_dict=dic,
+                sensor_type="BNO",
             )
             for cb in self.callbacks:
                 cb(data_frame)

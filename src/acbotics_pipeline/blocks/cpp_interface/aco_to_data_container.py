@@ -64,6 +64,7 @@ class Aco_To_Data_Container:
                 start_time=np.datetime64(header.start_time_nsec, "ns"),
                 start_count=header.adc_count,
                 frame_count=header.packet_num,
+                tick_time=header.tick_time_nsec,
             )
             for cb in self.callbacks:
                 cb(data_frame)

@@ -62,7 +62,9 @@ class Bnr_To_Data_Container:
             dic["quat_k"] = data_frame_bnr.quat_k
             dic["quat_r"] = data_frame_bnr.quat_r
             data_frame = DataContainer_Sensor(
-                timestamp=data_frame_bnr.header.start_time_nsec, value_dict=dic
+                timestamp=data_frame_bnr.header.start_time_nsec,
+                value_dict=dic,
+                sensor_type="BNR",
             )
             for cb in self.callbacks:
                 cb(data_frame)

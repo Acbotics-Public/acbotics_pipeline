@@ -5,13 +5,10 @@ import numpy as np
 
 
 class DataContainer_Sensor(DataContainer):
-    def __init__(
-        self,
-        timestamp,
-        value_dict,
-    ):
+    def __init__(self, timestamp, value_dict, sensor_type="UNK"):
         self.timestamp = timestamp
         self.value_dict = copy.copy(value_dict)
+        self.sensor_type = sensor_type
 
     def is_constant_rate(self):
         return False

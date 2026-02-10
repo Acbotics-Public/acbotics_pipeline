@@ -44,7 +44,9 @@ class Rtc_To_Data_Container:
             dic = {}
             dic["rtc_time"] = data_frame_rtc.rtc_time
             data_frame = DataContainer_Sensor(
-                timestamp=data_frame_rtc.header.start_time_nsec, value_dict=dic
+                timestamp=data_frame_rtc.header.start_time_nsec,
+                value_dict=dic,
+                sensor_type="RTC",
             )
             for cb in self.callbacks:
                 cb(data_frame)
