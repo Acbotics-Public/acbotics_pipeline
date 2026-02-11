@@ -165,16 +165,16 @@ class SensorChannel:
                 ind += 1
             debug_end_t = time.time()
             # print("%d, %f" % (ind, debug_end_t - debug_start_t))
-            print(
-                "Total time %f, per element %f, packet time %f, slice time %f, slice time per element %f"
-                % (
-                    debug_end_t - debug_start_t,
-                    (debug_end_t - debug_start_t) / ind,
-                    debug_packet_t - debug_start_t,
-                    debug_slice_t,
-                    debug_slice_t / ind,
-                )
-            )
+            # print(
+            #     "Total time %f, per element %f, packet time %f, slice time %f, slice time per element %f"
+            #     % (
+            #         debug_end_t - debug_start_t,
+            #         (debug_end_t - debug_start_t) / ind,
+            #         debug_packet_t - debug_start_t,
+            #         debug_slice_t,
+            #         debug_slice_t / ind,
+            #     )
+            # )
 
         return output_frames
 
@@ -225,6 +225,11 @@ class SensorChannel:
         # print(len(samples))
         return samples
 
+    def is_past_end(self, tm):
+        return (
+            self.active_data.iloc[-2]["host_epoch_sec"] < tm
+        )  # using 2nd to last. Last line is sometimes mangled
+
     def add_file(self, fn):
         name = fn.rsplit(".", maxsplit=1)[0]  # remove extension
         st = name.split("_", maxsplit=1)
@@ -247,12 +252,10 @@ class SensorChannel:
         data = data_file._load_csv_file(force_cache_reload=False)
         data_file.num_samples = len(data)
         if "sample_tick_interp_nsec" in data.columns:
-            print(data_file.filename)
             if len(data["sample_tick_interp_nsec"]) == 0:
                 return
             data_file.start_tick = data["sample_tick_interp_nsec"][0]
             data_file.end_tick = data["sample_tick_interp_nsec"].iloc[-1]
-            print((data_file.start_tick, data_file.end_tick))
         elif "data_epoch_nsec" in data.columns:
             if len(data["data_epoch_nsec"]) == 0:
                 return
@@ -279,22 +282,41 @@ class In_Acsense_CSV_Directory(ABC):
         exclude_channels=None,
         num_acoustic_channels=1,
     ):
+        self.indir = indir
         self.data_files = {}
         self.channels = channels
+        self.num_acoustic_channels = num_acoustic_channels
         self.exclude_channels = exclude_channels
-        self.data_path = os.path.abspath(indir)
+        self.cache_dir_base = cache_dir
         self.cache_dir = cache_dir
         self.replay_start_time = replay_start_time
         self.replay_time = replay_start_time
         self.clock_time_start = None
+        self.loop = False
+        self.loop_any = True  # loop once any channel is past end
         self.callbacks = []
         self.channel_callbacks = {}
-        if cache_dir is None:
+        self.paused = False
+        self.pause_cmd = False
+        self.restart_cmd = False
+        self.pause_time = None
+        self.new_target_directory = None
+        self.load_directory(indir, replay_start_time)
+        super().__init__()
+
+    def change_directory(self, pth):
+        self.new_target_directory = pth
+
+    def load_directory(self, indir, replay_start_time=None):
+        self.indir = indir
+        self.data_files = {}
+        self.data_path = os.path.abspath(indir)
+        if self.cache_dir_base is None:
             self.cache_dir = os.path.join(self.data_path, "cache")
-        elif os.path.isabs(cache_dir):
-            self.cache_dir = cache_dir
+        elif os.path.isabs(self.cache_dir_base):
+            self.cache_dir = self.cache_dir_base
         else:
-            self.cache_dir = os.path.join(self.data_path, cache_dir)
+            self.cache_dir = os.path.join(self.data_path, self.cache_dir_base)
         if not os.path.exists(self.cache_dir):
             os.makedirs(self.cache_dir)
 
@@ -326,19 +348,29 @@ class In_Acsense_CSV_Directory(ABC):
                     data_path=self.data_path,
                     cache_dir=self.cache_dir,
                     data_frame_format=data_frame_format,
-                    num_channels=num_acoustic_channels,
+                    num_channels=self.num_acoustic_channels,
                 )
             self.data_files[prefix].add_file(fn)
         # print("Build the cache")
         # self._build_file_cache()
-        if self.replay_time is None:
+        if replay_start_time is None:
             dts = np.min([d.get_earliest_time() for k, d in self.data_files.items()])
             self.replay_time = dts
             self.replay_start_time = dts
         for k, d in self.data_files.items():
             d.seek_start()
-        print(self.data_files)
-        super().__init__()
+
+    def restart(self):
+        self.restart_cmd = True
+
+    def get_loop_state(self):
+        return self.loop
+
+    def enable_loop(self):
+        self.loop = True
+
+    def disable_loop(self):
+        self.loop = False
 
     def get_number_of_input_channels(self):
         return 0
@@ -360,22 +392,68 @@ class In_Acsense_CSV_Directory(ABC):
     def is_waiting(self):
         return True
 
+    def get_indir(self):
+        return self.indir
+
+    def get_replay_time(self):
+        return self.replay_time
+
+    def pause(self):
+        self.pause_cmd = True
+
+    def resume(self):
+        self.pause_cmd = False
+
     def process(self, end_ts_raw):
-        start_t = time.time()
+        if self.new_target_directory is not None:
+            self.load_directory(self.new_target_directory)
+            self.new_target_directory = None
         end_ts_int = (
             end_ts_raw - np.datetime64("1970-01-01T00:00:00")
         ) / np.timedelta64(1, "s")
+        if self.restart_cmd:
+            self.restart_cmd = False
+            self.clock_time_start = end_ts_int
+            self.replay_time = self.replay_start_time
+            for chan in self.data_files.keys():
+                self.data_files[chan].seek_start()
+
+            self.paused = False
+            self.pause_cmd = False
+        if self.paused:
+            if not self.pause_cmd:
+                total_time_paused = end_ts_raw - self.pause_time
+                self.clock_time_start += total_time_paused / np.timedelta64(1, "s")
+                self.paused = False
+            else:
+                return  # remain paused
+        else:
+            if self.pause_cmd:
+                self.paused = True
+                self.pause_time = end_ts_raw
+            else:
+                pass  # continue runnitn normal
+        start_t = time.time()
+
         if self.clock_time_start is None:
             self.clock_time_start = end_ts_int
 
         end_ts = end_ts_int - self.clock_time_start + self.replay_start_time
         assert end_ts >= self.replay_time
         new_data = {}
+        all_done = True
+        any_done = False
         for chan in self.data_files.keys():
             df = self.data_files[chan]
+            this_done = df.is_past_end(end_ts)
+            any_done |= this_done
+            all_done &= this_done
             new_from_channel = df.pop_up_to_time(end_ts)
             if len(new_from_channel) > 0:
                 new_data[chan] = new_from_channel
+        if ((self.loop_any and any_done) or all_done) and self.loop:
+            self.restart()
+            return
         old_replay_time = self.replay_time
         self.replay_time = end_ts
         for chan in new_data.keys():
@@ -389,11 +467,11 @@ class In_Acsense_CSV_Directory(ABC):
                         cb(df)
             # print(frames)
         end_t = time.time()
-        print(
-            "time step processed=%f, elapsed=%f, delta_t process %f"
-            % (
-                end_ts - old_replay_time,
-                end_ts_int - self.clock_time_start,
-                end_t - start_t,
-            )
-        )
+        # print(
+        #     "time step processed=%f, elapsed=%f, delta_t process %f"
+        #     % (
+        #         end_ts - old_replay_time,
+        #         end_ts_int - self.clock_time_start,
+        #         end_t - start_t,
+        #     )
+        # )

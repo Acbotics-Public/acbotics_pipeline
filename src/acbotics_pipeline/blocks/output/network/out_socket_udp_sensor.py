@@ -28,7 +28,6 @@ class Sensor_Payload_IMU(UDP_Generic_Protocol):
             id2=self.id2,
             num_bytes=self.payload_size,
         )
-        print(df)
         if not "pitch_ned_deg" in df.value_dict:
             pitch = 0
             roll = 0
@@ -71,7 +70,6 @@ class Sensor_Payload_PTS(UDP_Generic_Protocol):
             id2=self.id2,
             num_bytes=self.payload_size,
         )
-        print(df)
         payload = struct.pack(
             self.payload_fmt,
             int(np.round(df.value_dict["pressure_mbar"] * self.pressure_mult)),
@@ -101,7 +99,6 @@ class Sensor_Payload_RTC(UDP_Generic_Protocol):
             id2=self.id2,
             num_bytes=self.payload_size,
         )
-        print(df)
         tm = df.value_dict["rtc_time"]
         dt = datetime.datetime.fromtimestamp(tm)
 
@@ -138,7 +135,6 @@ class Sensor_Payload_BNO(UDP_Generic_Protocol):
             id2=self.id2,
             num_bytes=self.payload_size,
         )
-        print(df)
         try:
             payload = struct.pack(
                 self.payload_fmt,
@@ -174,7 +170,6 @@ class Sensor_Payload_BNR(UDP_Generic_Protocol):
             id2=self.id2,
             num_bytes=self.payload_size,
         )
-        print(df)
         payload = struct.pack(
             self.payload_fmt,
             int(df.value_dict["status"]),
@@ -207,7 +202,6 @@ class Sensor_Payload_EPT(UDP_Generic_Protocol):
             id2=self.id2,
             num_bytes=self.payload_size,
         )
-        print(df)
         payload = struct.pack(
             self.payload_fmt,
             int(np.round(df.value_dict["pressure_mbar"] * self.pressure_mult)),
@@ -235,7 +229,6 @@ class Sensor_Payload_GPS_2(UDP_Generic_Protocol):
             id2=self.id2,
             num_bytes=self.payload_size,
         )
-        print(df)
         payload = struct.pack(
             self.payload_fmt,
             df.value_dict["lat"],
