@@ -24,7 +24,7 @@ sleep 1
 #    --platform linux/amd64,linux/arm64  \
 #    --output type=local,dest=dist/dist_ubuntu2404 \
 #    --file docker/ubuntu2404.dockerfile \
-    .
+#    .
 
 # docker buildx build \
 #     --platform linux/amd64,linux/arm64  \
