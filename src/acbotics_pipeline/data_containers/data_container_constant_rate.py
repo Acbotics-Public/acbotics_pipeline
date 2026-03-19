@@ -10,14 +10,16 @@ from .data_container import DataContainer
 import numpy as np
 import math
 
+from acbotics_pipeline.utils.timing.time_filter import SensorTimestamp
+
 
 class DataContainer_Constant_Rate(DataContainer):
     @icontract.require(
         lambda sample_rate: sample_rate > 0, "sample_rate must be positive"
     )
     @icontract.require(
-        lambda start_time: isinstance(start_time, np.datetime64),
-        "start_time must be datetime64",
+        lambda start_time: isinstance(start_time, SensorTimestamp),
+        "start_time must be a SensorTimestamp",
     )
     def __init__(
         self,
@@ -72,8 +74,8 @@ class DataContainer_Constant_Rate(DataContainer):
         return True
 
     @icontract.ensure(
-        lambda result: isinstance(result, np.datetime64),
-        "start_time must be datetime64",
+        lambda result: isinstance(result, SensorTimestamp),
+        "start_time must be SensorTimestamp",
     )
     def get_start_time(self):
         return self.start_time

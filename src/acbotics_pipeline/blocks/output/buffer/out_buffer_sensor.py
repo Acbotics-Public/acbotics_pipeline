@@ -110,7 +110,9 @@ class Out_Buffer_Sensor(PR_Threaded_Process):
 
             for k in dc.value_dict.keys():
                 self.data_buffer[k][self.next_write_index] = dc.value_dict[k]
-            self.data_buffer["timestamp"][self.next_write_index] = dc.timestamp
+            self.data_buffer["timestamp"][
+                self.next_write_index
+            ] = dc.timestamp.get_tick_time()
 
             self.next_write_index = (self.next_write_index + 1) % self.samples_to_keep
             if self.next_write_index == 0:

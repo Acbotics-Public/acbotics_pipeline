@@ -72,7 +72,7 @@ class UDP_Data_Protocol:
         adc_count=0,
         tick_time=0,
     ):
-        frame_start_time = start_time.astype(">i8")
+        frame_start_time = start_time
 
         data_endian = data_array.dtype.byteorder
         if force_endian is not None:
@@ -96,7 +96,7 @@ class UDP_Data_Protocol:
             data_array.size,
             sample_rate,
             frame_start_time,
-            tick_time,
+            int(tick_time / 10),
             adc_count,  # adc count
             scale,
             packet_number,

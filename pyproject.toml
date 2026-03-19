@@ -19,7 +19,7 @@ dependencies = [
 	"Cython",
 	"soundfile",
 	"pyaudio",
-	"arlpy",	
+	#"arlpy",	
 	"cryptocode"
 	#"gps",
 	# "geotiff",
@@ -28,6 +28,11 @@ dependencies = [
 	#"pyqtgraph",
 	# "acbotics_interface",
 ]
+
+# pyproject.toml
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
 
 #[tool.setuptools.packages]
 #find = {}  # Scanning implicit namespaces is active by default

@@ -9,6 +9,7 @@ import icontract
 from .data_container import DataContainer
 import numpy as np
 import math
+from acbotics_pipeline.utils.timing.time_filter import SensorTimestamp
 
 
 class DataContainer_Window_With_Sensors(DataContainer):
@@ -16,8 +17,8 @@ class DataContainer_Window_With_Sensors(DataContainer):
         lambda sample_rate: sample_rate > 0, "sample_rate must be positive"
     )
     @icontract.require(
-        lambda start_time: isinstance(start_time, np.datetime64),
-        "start_time must be datetime64",
+        lambda start_time: isinstance(start_time, SensorTimestamp),
+        "start_time must be SensorTimestamp",
     )
     def __init__(self, data, sample_rate, start_time, tick_time=0, sensors={}):
         # TODO: MAke sure all data is 2D array even if only one channel?
@@ -63,8 +64,8 @@ class DataContainer_Window_With_Sensors(DataContainer):
         return True
 
     @icontract.ensure(
-        lambda result: isinstance(result, np.datetime64),
-        "start_time must be datetime64",
+        lambda result: isinstance(result, SensorTimestamp),
+        "start_time must be SensorTimestamp",
     )
     def get_start_time(self):
         return self.start_time

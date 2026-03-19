@@ -1,5 +1,4 @@
 # import acbotics_pipeline.blocks.processes.beamformers.pr_beamformer_3d # resolve dependencies
-import acbotics_pipeline.blocks.processes.beamformers.pr_beamformer_bartlett
 
 # import acbotics_pipeline.blocks.processes.beamformers.pr_beamformer_both #resolve dependencies
 # import acbotics_pipeline.blocks.processes.beamformers.pr_beamformer_raw
@@ -10,6 +9,8 @@ try:
     from acbotics_pipeline.blocks.processes.beamformers.pr_beamformer_bartlett import (
         Pr_Beamformer_Bartlett,
     )
+    import acbotics_pipeline.blocks.processes.beamformers.pr_beamformer_bartlett
+
 except ModuleNotFoundError:
     print("arlpy not found. Skipping.")
 

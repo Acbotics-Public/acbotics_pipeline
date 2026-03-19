@@ -3,6 +3,7 @@ from acbotics_pipeline.data_containers.data_container_sensor import (
 )
 from acbotics_pipeline.blocks.base.pr_threaded_process import PR_Threaded_Process
 from . import ac
+from .generic_sensor_to_data_container import Generic_Sensor_To_Data_Container
 
 
 import threading
@@ -10,8 +11,9 @@ from time import sleep
 import numpy as np
 
 
-class Rtc_To_Data_Container:
-    def __init__(self, cpp_queue_rtc=None):
+class Rtc_To_Data_Container(Generic_Sensor_To_Data_Container):
+    def __init__(self, cpp_queue_rtc=None, time_filter=None):
+        super().__init__(time_filter)
         if cpp_queue_rtc is None:
             cpp_queue_rtc = ac.Q_RTC.create()
         self.cpp_queue_rtc = cpp_queue_rtc
@@ -43,8 +45,9 @@ class Rtc_To_Data_Container:
             data_frame_rtc = self.cpp_queue_rtc.pop()
             dic = {}
             dic["rtc_time"] = data_frame_rtc.rtc_time
+            sensor_time = self._get_sensor_timestamp(data_frame_rtc.header)
             data_frame = DataContainer_Sensor(
-                timestamp=data_frame_rtc.header.start_time_nsec,
+                timestamp=sensor_time,
                 value_dict=dic,
                 sensor_type="RTC",
             )

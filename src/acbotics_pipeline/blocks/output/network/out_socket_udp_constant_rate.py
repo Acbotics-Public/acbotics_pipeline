@@ -24,7 +24,8 @@ class Out_Socket_UDP_Constant_Rate(Out_Socket_UDP):
         """
         start_ind = 0
         num_channels = dc.data.shape[0]
-        ts = dc.get_start_time()
+        ts = int(dc.get_start_time().get_wall_time() * 1e9)
+
         while start_ind < dc.data.shape[1]:
             step = int(self.values_per_frame / num_channels)
             next_ind = start_ind + step

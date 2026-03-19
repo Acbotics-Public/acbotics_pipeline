@@ -1,7 +1,7 @@
 import csv
 import numpy as np
 from acbotics_pipeline.blocks.base.pr_threaded_process import PR_Threaded_Process
-
+from acbotics_pipeline.data_containers import DataContainer_Sensor
 import time
 
 
@@ -44,6 +44,14 @@ class Out_CSV_File(PR_Threaded_Process):
             tsf = (ts - np.datetime64(0, "ns")) / np.timedelta64(1, "s")
             t = np.array([[tsf + i / sr for i in range(dc._calculate_data_length())]])
             rows = np.concatenate((t, d), axis=0).transpose()
+
+        elif isinstance(dc, DataContainer_Sensor):
+            timestamp = dc.get_timestamps()[0]
+            dic = dc.value_dict
+            data = [timestamp]
+            for k in dc.get_csv_header():
+                data.append(dic[k])
+            rows = np.array([data])
 
         else:
             for data in zip(dc.get_timestamped_data()[0], dc.get_timestamped_data()[1]):

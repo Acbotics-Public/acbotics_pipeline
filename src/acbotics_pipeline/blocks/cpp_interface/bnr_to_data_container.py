@@ -3,6 +3,7 @@ from acbotics_pipeline.data_containers.data_container_sensor import (
 )
 from acbotics_pipeline.blocks.base.pr_threaded_process import PR_Threaded_Process
 from . import ac
+from .generic_sensor_to_data_container import Generic_Sensor_To_Data_Container
 
 
 import threading
@@ -10,8 +11,9 @@ from time import sleep
 import numpy as np
 
 
-class Bnr_To_Data_Container:
-    def __init__(self, cpp_queue_bnr=None):
+class Bnr_To_Data_Container(Generic_Sensor_To_Data_Container):
+    def __init__(self, cpp_queue_bnr=None, time_filter=None):
+        super().__init__(time_filter)
         if cpp_queue_bnr is None:
             cpp_queue_bnr = ac.Q_BNR.create()
         self.cpp_queue_bnr = cpp_queue_bnr
@@ -61,8 +63,9 @@ class Bnr_To_Data_Container:
             dic["quat_j"] = data_frame_bnr.quat_j
             dic["quat_k"] = data_frame_bnr.quat_k
             dic["quat_r"] = data_frame_bnr.quat_r
+            sensor_time = self._get_sensor_timestamp(data_frame_bnr.header)
             data_frame = DataContainer_Sensor(
-                timestamp=data_frame_bnr.header.start_time_nsec,
+                timestamp=sensor_time,
                 value_dict=dic,
                 sensor_type="BNR",
             )

@@ -12,6 +12,8 @@ import numpy as np
 import datetime
 import pandas as pd
 
+from acbotics_pipeline.utils.timing.time_filter import SensorTimestamp
+
 
 class DataFile:
     def __init__(self, filename, path, cache_path, file_time):
@@ -82,25 +84,33 @@ class SensorChannel:
         if self.data_frame_format == "sensor":
             header = list(data.columns.values)
             for ind, line in data.iterrows():
-                ts = line[self.SENSOR_TIMESTAMP_FIELD]
+                ts = line[self.SENSOR_TIMESTAMP_FIELD].iloc[0]
                 value_dict = {}
                 for col in header:
                     if not col in self.SENSOR_IGNORE_FIELDS:
                         value_dict[col] = line[col]
+                sensor_timestamp = SensorTimestamp.from_tick(tick_time_int=ts)
                 df = DataContainer_Sensor(
-                    timestamp=ts, value_dict=value_dict, sensor_type=self.sensor_type
+                    timestamp=sensor_timestamp,
+                    value_dict=value_dict,
+                    sensor_type=self.sensor_type,
                 )
                 output_frames.append(df)
         elif self.data_frame_format == "gps":
             header = list(data.columns.values)
             for ind, line in data.iterrows():
-                ts = line[self.GPS_TIMESTAMP_FIELD]
+                ts = float(line[self.GPS_TIMESTAMP_FIELD].iloc[0])
                 value_dict = {}
                 for col in header:
                     if not col in self.GPS_TIMESTAMP_FIELD:
                         value_dict[col] = line[col]
+                # print(ts)
+                sensor_timestamp = SensorTimestamp.from_unix_time(unix_time_float=ts)
+
                 df = DataContainer_Sensor(
-                    timestamp=ts, value_dict=value_dict, sensor_type=self.sensor_type
+                    timestamp=sensor_timestamp,
+                    value_dict=value_dict,
+                    sensor_type=self.sensor_type,
                 )
                 output_frames.append(df)
         elif self.data_frame_format == "acoustic":
@@ -134,9 +144,16 @@ class SensorChannel:
                 packet_num = data["packet_num"].iloc[start_ind]
                 tick_time = data["frame_tick_time_nsec"].iloc[start_ind]
                 adc_count = data["adc_count"].iloc[start_ind]
-                start_time = np.datetime64(
-                    int(data["packet_epoch_nsec"].iloc[start_ind]), "ns"
+                # start_time = np.datetime64(
+                #     int(data["packet_epoch_nsec"].iloc[start_ind]), "ns"
+                # )
+                # print(data["packet_epoch_nsec"].iloc[start_ind] / 1e9)
+                start_time = SensorTimestamp.from_unix_time(
+                    unix_time_float=float(
+                        data["packet_epoch_nsec"].iloc[start_ind] / 1e9
+                    )
                 )
+                start_time.add_tick_time(tick_time_int=int(tick_time), state="PRIMARY")
                 debug_slice_start = time.time()
 
                 # doing this slice in two steps seems to be substantially more efficient than as 1 operation
@@ -190,12 +207,15 @@ class SensorChannel:
 
     def seek_next_file(self):
         print("Seeking")
+        print(self.file_index)
         if self.file_index + 1 >= len(self.files.keys()):
             return False
         self.file_index += 1
         self.active_data_index = 0
         self.active_key = self.ordered_keys[self.file_index]
         self.active_data = self.files[self.active_key]._load_csv_file()
+        print(self.active_data)
+
         return True
 
     def peek_next_time(self):
@@ -215,6 +235,9 @@ class SensorChannel:
     def pop_up_to_time(self, time):
         samples = []
         # print("pop " + self.name)
+        if self.active_data_index >= len(self.active_data):
+            print(time)
+            self.seek_next_file()
         remaining_frame = self.active_data.iloc[self.active_data_index :]
         # end_index = remaining_frame.loc[remaining_frame["host_epoch_sec"] > time].iat[0]
         end_index = remaining_frame["host_epoch_sec"].searchsorted(time, "left")
@@ -226,8 +249,10 @@ class SensorChannel:
         return samples
 
     def is_past_end(self, tm):
-        return (
-            self.active_data.iloc[-2]["host_epoch_sec"] < tm
+        return self.active_data.iloc[-2][
+            "host_epoch_sec"
+        ] < tm and self.file_index == len(
+            self.files.keys()
         )  # using 2nd to last. Last line is sometimes mangled
 
     def add_file(self, fn):
@@ -281,6 +306,7 @@ class In_Acsense_CSV_Directory(ABC):
         channels=None,
         exclude_channels=None,
         num_acoustic_channels=1,
+        loop=False,
     ):
         self.indir = indir
         self.data_files = {}
@@ -292,7 +318,7 @@ class In_Acsense_CSV_Directory(ABC):
         self.replay_start_time = replay_start_time
         self.replay_time = replay_start_time
         self.clock_time_start = None
-        self.loop = False
+        self.loop = loop
         self.loop_any = True  # loop once any channel is past end
         self.callbacks = []
         self.channel_callbacks = {}
@@ -302,6 +328,10 @@ class In_Acsense_CSV_Directory(ABC):
         self.pause_time = None
         self.new_target_directory = None
         self.load_directory(indir, replay_start_time)
+        for chan in self.data_files.keys():
+            df = self.data_files[chan]
+            discard = df.pop_up_to_time(self.replay_start_time)
+
         super().__init__()
 
     def change_directory(self, pth):
@@ -439,6 +469,8 @@ class In_Acsense_CSV_Directory(ABC):
             self.clock_time_start = end_ts_int
 
         end_ts = end_ts_int - self.clock_time_start + self.replay_start_time
+
+        print(end_ts)
         assert end_ts >= self.replay_time
         new_data = {}
         all_done = True
@@ -448,6 +480,9 @@ class In_Acsense_CSV_Directory(ABC):
             this_done = df.is_past_end(end_ts)
             any_done |= this_done
             all_done &= this_done
+            if df.peek_next_time() < self.replay_start_time:
+                discard = df.pop_up_to_time(self.replay_start_time)
+
             new_from_channel = df.pop_up_to_time(end_ts)
             if len(new_from_channel) > 0:
                 new_data[chan] = new_from_channel
