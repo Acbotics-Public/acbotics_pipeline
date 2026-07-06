@@ -3,6 +3,7 @@ from acbotics_pipeline.data_containers.data_container_sensor import (
 )
 from acbotics_pipeline.blocks.base.pr_threaded_process import PR_Threaded_Process
 from . import ac
+from .generic_sensor_to_data_container import Generic_Sensor_To_Data_Container
 
 
 import threading
@@ -10,8 +11,9 @@ from time import sleep
 import numpy as np
 
 
-class Pts_To_Data_Container:
-    def __init__(self, cpp_queue_pts=None):
+class Pts_To_Data_Container(Generic_Sensor_To_Data_Container):
+    def __init__(self, cpp_queue_pts=None, time_filter=None):
+        super().__init__(time_filter)
         if cpp_queue_pts is None:
             cpp_queue_pts = ac.Q_PTS.create()
         self.cpp_queue_pts = cpp_queue_pts
@@ -44,8 +46,11 @@ class Pts_To_Data_Container:
             dic = {}
             dic["pressure_mbar"] = data_frame_pts.pressure_mbar
             dic["temperature_c"] = data_frame_pts.temperature_c
+            sensor_time = self._get_sensor_timestamp(data_frame_pts.header)
             data_frame = DataContainer_Sensor(
-                timestamp=data_frame_pts.header.start_time_nsec, value_dict=dic
+                timestamp=sensor_time,
+                value_dict=dic,
+                sensor_type="PTS",
             )
             for cb in self.callbacks:
                 cb(data_frame)

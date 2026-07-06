@@ -3,19 +3,22 @@ from acbotics_pipeline.data_containers.data_container_sensor import (
 )
 from acbotics_pipeline.blocks.base.pr_threaded_process import PR_Threaded_Process
 from . import ac
+from acbotics_pipeline.utils.timing.time_filter import SensorTimestamp
 
-
+from .generic_sensor_to_data_container import Generic_Sensor_To_Data_Container
 import threading
 from time import sleep
 import numpy as np
 
 
-class Imu_To_Data_Container:
-    def __init__(self, cpp_queue_imu=None):
+class Imu_To_Data_Container(Generic_Sensor_To_Data_Container):
+    def __init__(self, cpp_queue_imu=None, time_filter=None):
+        super().__init__(time_filter)
         if cpp_queue_imu is None:
             cpp_queue_imu = ac.Q_IMU.create()
         self.cpp_queue_imu = cpp_queue_imu
         self.callbacks = []
+        self.time_filter = time_filter
         self.thread = threading.Thread(target=self.run_thread)
         self.start()
 
@@ -50,8 +53,11 @@ class Imu_To_Data_Container:
             dic["gyro_x"] = data_frame_imu.gyro_x
             dic["gyro_y"] = data_frame_imu.gyro_y
             dic["gyro_z"] = data_frame_imu.gyro_z
+            sensor_time = self._get_sensor_timestamp(data_frame_imu.header)
             data_frame = DataContainer_Sensor(
-                timestamp=data_frame_imu.header.start_time_nsec, value_dict=dic
+                timestamp=sensor_time,
+                value_dict=dic,
+                sensor_type="IMU",
             )
             for cb in self.callbacks:
                 cb(data_frame)

@@ -9,12 +9,15 @@ import threading
 from time import sleep
 import numpy as np
 
+from acbotics_pipeline.utils.timing.time_filter import SensorTimestamp
+
 
 class Aco_To_Data_Container:
-    def __init__(self, cpp_queue_aco=None):
+    def __init__(self, cpp_queue_aco=None, time_filter=None):
         if cpp_queue_aco is None:
             cpp_queue_aco = ac.Q_ACO.create()
         self.cpp_queue_aco = cpp_queue_aco
+        self.time_filter = time_filter
         self.callbacks = []
         self.thread = threading.Thread(target=self.run_thread)
 
@@ -58,12 +61,22 @@ class Aco_To_Data_Container:
             data_frame_cpp = self.cpp_queue_aco.pop()
             data = data_frame_cpp.viewData()
             header = data_frame_cpp.header
+            start_time = header.start_time_nsec
+            sensor_time = SensorTimestamp.from_unix_time(
+                unix_time_float=start_time
+            )  # TODO: Find Time ref
+            sensor_time.add_tick_time(
+                tick_time_int=header.tick_time_nsec, state="PRIMARY"
+            )
+            if self.time_filter is not None and start_time > 0:
+                self.time_filter.process_timestamp(sensor_time)
             data_frame = DataContainer_Constant_Rate(
                 data=data,
                 sample_rate=header.sample_rate,
-                start_time=np.datetime64(header.start_time_nsec, "ns"),
+                start_time=sensor_time,
                 start_count=header.adc_count,
                 frame_count=header.packet_num,
+                tick_time=header.tick_time_nsec,
             )
             for cb in self.callbacks:
                 cb(data_frame)

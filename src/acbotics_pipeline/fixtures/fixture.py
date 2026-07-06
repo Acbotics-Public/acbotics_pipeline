@@ -61,7 +61,14 @@ class Fixture(ABC):
             print("Warning: Adding input signal that is not yet in router")
         self.signal_router[signal_name].append(function)
 
-    def add_block(self, block, input_signal=None, output_signal=None):
+    def add_block(
+        self,
+        block,
+        input_signal=None,
+        output_signal=None,
+        named_output_signals=None,
+        input_signals=None,
+    ):
         self.blocks.append(block)
         if output_signal:
             block.add_callback(self.get_route_signal_callback(output_signal))
@@ -69,11 +76,30 @@ class Fixture(ABC):
                 self.signal_router[output_signal] = []
             else:
                 print("Warning: Adding signal already in signal router")
+        if named_output_signals is not None:
+            for sig in named_output_signals:
+                channel_name = sig[0]
+                signal_name = sig[1]
+                block.add_named_callback(
+                    channel_name, self.get_route_signal_callback(signal_name)
+                )
+                if signal_name not in self.signal_router.keys():
+                    self.signal_router[signal_name] = []
+                else:
+                    print("Warning: Adding signal already in signal router")
+
         if input_signal:
             if input_signal not in self.signal_router.keys():
                 self.signal_router[input_signal] = []
                 print("Warning: Adding input signal that is not yet in router")
             self.signal_router[input_signal].append(block.input_data)
+
+        if input_signals:
+            for sig in input_signals:
+                if sig not in self.signal_router.keys():
+                    self.signal_router[sig] = []
+                    print("Warning: Adding input signal that is not yet in router")
+                self.signal_router[sig].append(block.input_data)
 
     def route_signal(self, dc, sig_name):
         if sig_name not in self.signal_router.keys():

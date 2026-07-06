@@ -26,15 +26,16 @@ class Fixture_UDP_Receiver(Fixture_Pyplot):
         start_time = np.datetime64(time.time_ns(), "ns")
         SAMPLE_RATE = 52768
         num_sigs = 16
-        # target_ip_addr = "10.42.0.115" #'localhost'
-        # target_ip_addr = "192.168.1.32"
-        # #target_ip_addr = '192.168.7.1'
-        # multicast = False
-        target_ip_addr = "224.1.1.1"
+        iface_ip = "127.0.0.1"
+        multicast_group = "224.1.1.1"
         multicast = True
         self.add_block(
             In_Socket_UDP_Constant_Rate_Process_Ac_Sense(
-                target_ip_addr, port=9760, multicast=multicast
+                iface_ip,
+                port=9760,
+                multicast=multicast,
+                # multicast_interface=args.gps_iface_ip,
+                multicast_group=multicast_group,
             ),
             output_signal="UDP_OUT",
         )

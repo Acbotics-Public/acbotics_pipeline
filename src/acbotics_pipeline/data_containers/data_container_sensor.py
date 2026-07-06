@@ -3,15 +3,17 @@ import icontract
 from .data_container import DataContainer
 import numpy as np
 
+import acbotics_pipeline.helpers.contract_helpers as ch
+from acbotics_pipeline.utils.timing.time_filter import SensorTimestamp
+
 
 class DataContainer_Sensor(DataContainer):
-    def __init__(
-        self,
-        timestamp,
-        value_dict,
-    ):
+    @ch.argtype("timestamp", SensorTimestamp)
+    @ch.argtype("sensor_type", str)
+    def __init__(self, timestamp, value_dict, sensor_type="UNK"):
         self.timestamp = timestamp
         self.value_dict = copy.copy(value_dict)
+        self.sensor_type = sensor_type
 
     def is_constant_rate(self):
         return False
@@ -33,8 +35,8 @@ class DataContainer_Sensor(DataContainer):
     def __repr__(self):
         # pprint(self.__dict__, indent=2)
         retval = """DataContainer_Sensor:
-        time: %f\r\n""" % (
-            self.timestamp,
+        time: %s\r\n""" % (
+            repr(self.timestamp),
         )
 
         for k in sorted(self.value_dict.keys()):
@@ -42,7 +44,10 @@ class DataContainer_Sensor(DataContainer):
         return retval
 
     def get_timestamped_data(self):
-        return ([self.timestamp], np.array([[self.pressure_mbar, self.temp_c]]))
+        out = []
+        for k in sorted(self.value_dict.keys()):
+            out.append(self.value_dict[k])
+        return ([self.timestamp], np.array(out))
 
     def get_csv_header(self):
         return [k for k in sorted(self.value_dict.keys())]

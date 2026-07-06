@@ -55,6 +55,7 @@ class Out_Buffer_Sensor(PR_Threaded_Process):
 
     def get_buffer(self, signals=None):
         ys = {}
+        print(self.channels)
         with self.mutex:
             if self.filled:
                 x = np.zeros(self.samples_to_keep)
@@ -110,7 +111,11 @@ class Out_Buffer_Sensor(PR_Threaded_Process):
 
             for k in dc.value_dict.keys():
                 self.data_buffer[k][self.next_write_index] = dc.value_dict[k]
-            self.data_buffer["timestamp"][self.next_write_index] = dc.timestamp
+            try:
+                ts = dc.timestamp.get_tick_time()
+            except KeyError:
+                ts = dc.timestamp.get_wall_time()
+            self.data_buffer["timestamp"][self.next_write_index] = ts
 
             self.next_write_index = (self.next_write_index + 1) % self.samples_to_keep
             if self.next_write_index == 0:

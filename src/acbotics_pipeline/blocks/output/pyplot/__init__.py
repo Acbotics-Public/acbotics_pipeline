@@ -12,7 +12,7 @@ import acbotics_pipeline.blocks.output.pyplot.out_pyplot_spectrum_fft
 import acbotics_pipeline.blocks.output.pyplot.out_pyplot_time_series
 import acbotics_pipeline.blocks.output.pyplot.out_pyplot_time_series_multiple
 import acbotics_pipeline.blocks.output.pyplot.out_pyplot_sensor
-
+import acbotics_pipeline.blocks.output.pyplot.out_pyplot_window
 
 from acbotics_pipeline.blocks.output.pyplot.out_pyplot_beamformed_data import (
     Out_Pyplot_Beamformed_Data,
@@ -54,3 +54,5 @@ from acbotics_pipeline.blocks.output.pyplot.out_pyplot_time_series_multiple impo
     Out_Pyplot_Time_Series_Multiple,
 )
 from acbotics_pipeline.blocks.output.pyplot.out_pyplot_sensor import Out_Pyplot_Sensor
+
+from acbotics_pipeline.blocks.output.pyplot.out_pyplot_window import Out_Pyplot_Window

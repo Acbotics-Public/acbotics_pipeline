@@ -13,6 +13,7 @@ import acbotics_pipeline.data_containers.data_container_fft
 import acbotics_pipeline.data_containers.data_container_beamformed_output_2d_simple
 import acbotics_pipeline.data_containers.data_container_beamformed_output_raw_simple
 import acbotics_pipeline.data_containers.data_container_sensor
+import acbotics_pipeline.data_containers.data_container_detection
 
 
 from acbotics_pipeline.data_containers.data_container import DataContainer
@@ -45,3 +46,6 @@ from acbotics_pipeline.data_containers.data_container_beamformed_output_raw_simp
     DataContainer_Beamformed_Output_Raw_Simple,
 )
 from acbotics_pipeline.data_containers.data_container_sensor import DataContainer_Sensor
+from acbotics_pipeline.data_containers.data_container_detection import (
+    DataContainer_Detection,
+)

@@ -8,10 +8,12 @@ from . import ac
 import threading
 from time import sleep
 import numpy as np
+from .generic_sensor_to_data_container import Generic_Sensor_To_Data_Container
 
 
-class Ept_To_Data_Container:
-    def __init__(self, cpp_queue_ept=None):
+class Ept_To_Data_Container(Generic_Sensor_To_Data_Container):
+    def __init__(self, cpp_queue_ept=None, time_filter=None):
+        super().__init__(time_filter)
         if cpp_queue_ept is None:
             cpp_queue_ept = ac.Q_EPT.create()
         self.cpp_queue_ept = cpp_queue_ept
@@ -44,8 +46,11 @@ class Ept_To_Data_Container:
             dic = {}
             dic["pressure_mbar"] = data_frame_ept.pressure_mbar
             dic["temperature_c"] = data_frame_ept.temperature_c
+            sensor_time = self._get_sensor_timestamp(data_frame_ept.header)
             data_frame = DataContainer_Sensor(
-                timestamp=data_frame_ept.header.start_time_nsec, value_dict=dic
+                timestamp=sensor_time,
+                value_dict=dic,
+                sensor_type="EPT",
             )
             for cb in self.callbacks:
                 cb(data_frame)

@@ -3,6 +3,7 @@ from acbotics_pipeline.data_containers.data_container_sensor import (
 )
 from acbotics_pipeline.blocks.base.pr_threaded_process import PR_Threaded_Process
 from . import ac
+from .generic_sensor_to_data_container import Generic_Sensor_To_Data_Container
 
 
 import threading
@@ -10,8 +11,9 @@ from time import sleep
 import numpy as np
 
 
-class Bno_To_Data_Container:
-    def __init__(self, cpp_queue_bno=None):
+class Bno_To_Data_Container(Generic_Sensor_To_Data_Container):
+    def __init__(self, cpp_queue_bno=None, time_filter=None):
+        super().__init__(time_filter)
         if cpp_queue_bno is None:
             cpp_queue_bno = ac.Q_BNO.create()
         self.cpp_queue_bno = cpp_queue_bno
@@ -61,8 +63,11 @@ class Bno_To_Data_Container:
             dic["sense_x"] = data_frame_bno.sense_x
             dic["sense_y"] = data_frame_bno.sense_y
             dic["sense_z"] = data_frame_bno.sense_z
+            sensor_time = self._get_sensor_timestamp(data_frame_bno.header)
             data_frame = DataContainer_Sensor(
-                timestamp=data_frame_bno.header.start_time_nsec, value_dict=dic
+                timestamp=sensor_time,
+                value_dict=dic,
+                sensor_type="BNO",
             )
             for cb in self.callbacks:
                 cb(data_frame)
