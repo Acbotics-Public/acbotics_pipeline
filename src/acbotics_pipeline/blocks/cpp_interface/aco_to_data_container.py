@@ -68,7 +68,7 @@ class Aco_To_Data_Container:
             sensor_time.add_tick_time(
                 tick_time_int=header.tick_time_nsec, state="PRIMARY"
             )
-            if self.time_filter is not None:
+            if self.time_filter is not None and start_time > 0:
                 self.time_filter.process_timestamp(sensor_time)
             data_frame = DataContainer_Constant_Rate(
                 data=data,

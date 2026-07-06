@@ -1,4 +1,5 @@
 import acbotics_pipeline.helpers.contract_helpers as ch
+import numpy as np
 
 
 class TickTime:
@@ -6,12 +7,12 @@ class TickTime:
 
     @ch.argtype("state", (str))
     @ch.argtype("src", (str))
-    @ch.argtype("tick_time", (int, float))
+    @ch.argtype("tick_time", (int, float, np.int64))
     @ch.argin("state", VALID_STATES)
     def __init__(self, tick_time, src="TICK", state="PRIMARY", tick_step=1e-9):
         """Create a tick time. src is used if there are multiple tick time bases in
         the system that need to be disambiguated"""
-        self.tick_time = tick_time
+        self.tick_time = float(tick_time)
         self.src = src
         self.state = state
         self.tick_step = tick_step
@@ -37,7 +38,11 @@ class WallTime:
         self.state = state
 
     def __repr__(self):
-        return "Wall Time: SRC=%s, state=%s" % (self.src, self.state)
+        return "Wall Time: SRC=%s, state=%s, time=%f" % (
+            self.src,
+            self.state,
+            self.wall_time,
+        )
 
 
 class SensorTimestamp:
@@ -80,6 +85,9 @@ class SensorTimestamp:
     @ch.argtype("unix_time_float", (int, float))
     @ch.argtype("time_ref", str)
     def add_wall_time(self, unix_time_float, time_ref="COMP", state="DERIVED"):
+        if unix_time_float <= 0:
+            print(f"Refusing to use negative wall time {unix_time_float}")
+            return
         self.wall_times[time_ref] = WallTime(
             wall_time=unix_time_float, src=time_ref, state=state
         )

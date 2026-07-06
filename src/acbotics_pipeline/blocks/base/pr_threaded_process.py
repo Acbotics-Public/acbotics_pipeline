@@ -8,7 +8,7 @@ import pyprctl
 
 
 class PR_Threaded_Process(ABC):
-    def __init__(self, max_qsize=1000, timer_sec=None):
+    def __init__(self, max_qsize=10000, timer_sec=None):
         self.callbacks = []
         self.dataframes = queue.Queue()
         self.thread = threading.Thread(target=self.run_thread)

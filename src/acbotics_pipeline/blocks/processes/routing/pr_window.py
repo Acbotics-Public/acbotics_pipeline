@@ -15,6 +15,7 @@ import multiprocessing
 from acbotics_pipeline.utils.timing.time_filter import SensorTimestamp
 
 # TODO: This can probably be simplified now that we have SensorTimestamp with tick/wall time mapping built in
+import time
 
 
 @dataclass(order=True)
@@ -225,19 +226,22 @@ class Pr_Window(PR_Threaded_Process):
     def handle_data(self, dc):
         # we know the windows are in order. Once we don't need to add data to one, we know we can stop checking.
         # print("Latest Acoustic Tick:" + repr(dc.start_time.get_tick_time()))
-
         next_start_time = None
         latest_tick = None
         latest_ts = None
-        for ind_base in range(self.MAX_DATA_WINDOWS):
+        # for ind_base in range(self.MAX_DATA_WINDOWS):
+        for ind_base in range(2):
             ind = (ind_base + self.base_window_idx) % self.MAX_DATA_WINDOWS
             window = self.data_windows[ind]
             if not window.active:
                 if next_start_time is None:
+                    print("configure 1")
                     window.configure(dc.start_time)
                 elif (
                     dc.start_time.get_wall_time() >= next_start_time
                 ):  # should we add the dc length here?
+                    print("configure 2")
+
                     window.configure(dc.start_time)
                 else:
                     break  # we are Done
@@ -285,7 +289,6 @@ class Pr_Window(PR_Threaded_Process):
                     #     break  # we reached the end
             else:
                 break
-
         # now see if any of our sensors can be added with a nontick timebase.
         while True:
             if self.pending_sensaor_data_unticked.is_empty():

@@ -35,8 +35,8 @@ class DataContainer_Sensor(DataContainer):
     def __repr__(self):
         # pprint(self.__dict__, indent=2)
         retval = """DataContainer_Sensor:
-        time: %f\r\n""" % (
-            self.timestamp,
+        time: %s\r\n""" % (
+            repr(self.timestamp),
         )
 
         for k in sorted(self.value_dict.keys()):
