@@ -38,5 +38,6 @@ testpaths = ["tests"]
 #find = {}  # Scanning implicit namespaces is active by default
 
 [project.scripts]
+run-acsense-cpp-logger = "acbotics_pipeline.scripts.fixture_cpp_logger:run"
 #run-acsense-dashboard = "acsense_display.acsense_dashboard:acsense_dashboard"
 # run-acsense-logger = "acsense_display.scripts.acsense_logger:acsense_logger"
